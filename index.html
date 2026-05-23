@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Talkbox Studio</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 顶部工具栏 -->
+<header id="toolbar">
+  <div class="tool-group left">
+    <button id="btn-play" class="tool-btn" data-i18n-title="toolbar.play"><svg width="20" height="20" viewBox="0 0 20 20"><polygon points="5,2 18,10 5,18"/></svg></button>
+    <button id="btn-stop" class="tool-btn" data-i18n-title="toolbar.stop"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14"/></svg></button>
+    <button id="btn-record" class="tool-btn record" data-i18n-title="toolbar.record"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/></svg></button>
+    <span class="sep"></span>
+    <label class="tool-label">BPM</label>
+    <input type="number" id="bpm-input" class="tool-input" value="120" min="40" max="300" step="1">
+    <button id="btn-metronome" class="tool-btn" data-i18n-title="toolbar.metronome"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="3" y="2" width="5" height="16"/><circle cx="10.5" cy="14" r="3"/></svg></button>
+  </div>
+  <div class="tool-group center">
+    <span class="track-label" data-i18n="toolbar.track-label">当前轨:</span>
+    <div class="track-select-custom" id="track-select">
+      <button class="track-select-trigger">
+        <span class="track-color-dot"></span>
+        <span class="track-name"></span>
+        <svg class="track-select-arrow" width="10" height="10" viewBox="0 0 10 10"><path d="M2 3l3 4 3-4" stroke="#9696a8" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="track-select-menu"></div>
+    </div>
+    <button id="btn-add-track" class="tool-btn sm" data-i18n="toolbar.add-track" data-i18n-title="toolbar.add-track">+轨</button>
+    <button id="btn-del-track" class="tool-btn sm" data-i18n="toolbar.del-track" data-i18n-title="toolbar.del-track">-轨</button>
+    <button id="btn-track-color" class="tool-btn color-dot" data-i18n-title="toolbar.track-color"></button>
+    <span class="sep"></span>
+    <div class="reset-dropdown">
+      <button id="btn-reset" class="tool-btn reset" data-i18n-title="toolbar.reset">⟲</button>
+      <div class="reset-menu">
+        <button class="reset-option" data-action="current" data-i18n="toolbar.reset-current">重置当前轨道</button>
+        <button class="reset-option" data-action="all" data-i18n="toolbar.reset-all">重置所有轨道</button>
+      </div>
+    </div>
+  </div>
+  <div class="tool-group right">
+    <button id="btn-midi-import" class="tool-btn" data-i18n="toolbar.import-midi">导入 MIDI</button>
+    <input type="file" id="midi-file-input" accept=".mid,.midi" hidden>
+    <button id="btn-theme" class="tool-btn theme-dot" data-i18n-title="toolbar.theme"></button>
+    <button id="btn-save" class="tool-btn" data-i18n="toolbar.save">保存</button>
+    <button id="btn-load" class="tool-btn" data-i18n="toolbar.load">加载</button>
+    <button id="btn-export-audio" class="tool-btn primary" data-i18n="toolbar.export">导出音频</button>
+    <span class="sep"></span>
+    <button id="btn-lang" class="tool-btn sm" data-i18n-title="toolbar.lang">中/EN</button>
+  </div>
+</header>
+
+<!-- 主区域 -->
+<div id="main-area">
+
+  <!-- 左面板：钢琴键盘 + 控制 -->
+  <aside id="left-panel">
+    <!-- 共振峰控制区 -->
+    <div class="panel-section" id="formant-section">
+      <div class="section-header">
+        <span data-i18n="section.formant">共振峰</span>
+        <button id="btn-formant-mode" class="mode-toggle" data-i18n="formant.advanced">高级</button>
+      </div>
+      <!-- 简易模式 -->
+      <div id="formant-simple" class="formant-mode active">
+        <div class="vowel-grid">
+          <button class="vowel-btn" data-vowel="a">a <span class="help-icon" data-i18n-tip="tip.vowel-a" data-tip="元音 /a/，口腔张开，F1 较高 F2 适中">?</span></button>
+          <button class="vowel-btn" data-vowel="e">e <span class="help-icon" data-i18n-tip="tip.vowel-e" data-tip="元音 /e/，舌位靠前，F2 较高">?</span></button>
+          <button class="vowel-btn" data-vowel="i">i <span class="help-icon" data-i18n-tip="tip.vowel-i" data-tip="元音 /i/，舌位最高最前，F1 低 F2 极高">?</span></button>
+          <button class="vowel-btn" data-vowel="o">o <span class="help-icon" data-i18n-tip="tip.vowel-o" data-tip="元音 /o/，圆唇后元音，F1 和 F2 均较低">?</span></button>
+          <button class="vowel-btn" data-vowel="u">u <span class="help-icon" data-i18n-tip="tip.vowel-u" data-tip="元音 /u/，圆唇高后元音，F1/F2 均为最低">?</span></button>
+          <button class="vowel-btn" data-vowel="ae">ae <span class="help-icon" data-i18n-tip="tip.vowel-ae" data-tip="元音 /æ/，介于 a 和 e 之间">?</span></button>
+          <button class="vowel-btn" data-vowel="oo">oo <span class="help-icon" data-i18n-tip="tip.vowel-oo" data-tip="元音 /ʊ/，介于 u 和 o 之间">?</span></button>
+          <button class="vowel-btn" data-vowel="er">er <span class="help-icon" data-i18n-tip="tip.vowel-er" data-tip="儿化元音 /ɚ/，卷舌特征共振峰">?</span></button>
+          <button class="vowel-btn active" data-vowel="bypass">OFF <span class="help-icon" data-i18n-tip="tip.vowel-off" data-tip="关闭共振峰滤波，输出原始载波音色">?</span></button>
+        </div>
+      </div>
+      <!-- 高级模式 -->
+      <div id="formant-advanced" class="formant-mode">
+        <div class="knob-group">
+          <label>F1 <span class="help-icon" data-i18n-tip="tip.f1" data-tip="第一共振峰频率，塑造元音的基础音色特征">?</span> <input type="number" id="val-f1" value="500" min="200" max="1200" step="10" class="val-input">Hz</label>
+          <input type="range" id="f1-knob" min="200" max="1200" value="500" step="10">
+        </div>
+        <div class="knob-group">
+          <label>F2 <span class="help-icon" data-i18n-tip="tip.f2" data-tip="第二共振峰频率，影响元音的明亮度和辨识度">?</span> <input type="number" id="val-f2" value="1500" min="600" max="2800" step="10" class="val-input">Hz</label>
+          <input type="range" id="f2-knob" min="600" max="2800" value="1500" step="10">
+        </div>
+        <div class="knob-group">
+          <label>F3 <span class="help-icon" data-i18n-tip="tip.f3" data-tip="第三共振峰频率，为元音添加高频细节质感">?</span> <input type="number" id="val-f3" value="2500" min="1500" max="4000" step="10" class="val-input">Hz</label>
+          <input type="range" id="f3-knob" min="1500" max="4000" value="2500" step="10">
+        </div>
+        <div class="knob-group">
+          <label>Q <span class="help-icon" data-i18n-tip="tip.q" data-tip="共振峰品质因数（带宽），值越小共振峰越尖锐突出">?</span> <input type="number" id="val-q" value="2" min="0.5" max="10" step="0.1" class="val-input"></label>
+          <input type="range" id="q-knob" min="0.5" max="10" value="2" step="0.1">
+        </div>
+        <div class="knob-group">
+          <label>Mix <span class="help-icon" data-i18n-tip="tip.mix" data-tip="共振峰滤波信号与原始载波的混合比例">?</span> <input type="number" id="val-mix" value="80" min="0" max="100" step="1" class="val-input">%</label>
+          <input type="range" id="mix-knob" min="0" max="100" value="80" step="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- 载波控制区 -->
+    <div class="panel-section" id="carrier-section">
+      <div class="section-header"><span data-i18n="section.carrier">载波</span></div>
+      <div class="waveform-grid">
+        <button class="wave-btn active" data-wave="sawtooth"><span data-i18n="carrier.sawtooth">锯齿</span> <span class="help-icon" data-i18n-tip="tip.wave-sawtooth" data-tip="富含奇偶次谐波，音色明亮有力，经典 Talkbox 音色">?</span></button>
+        <button class="wave-btn" data-wave="square"><span data-i18n="carrier.square">方波</span> <span class="help-icon" data-i18n-tip="tip.wave-square" data-tip="仅含奇次谐波，音色空洞具有电子感">?</span></button>
+        <button class="wave-btn" data-wave="triangle"><span data-i18n="carrier.triangle">三角</span> <span class="help-icon" data-i18n-tip="tip.wave-triangle" data-tip="谐波较少，音色柔和接近正弦波">?</span></button>
+        <button class="wave-btn" data-wave="sine"><span data-i18n="carrier.sine">正弦</span> <span class="help-icon" data-i18n-tip="tip.wave-sine" data-tip="纯基频无谐波，音色最纯净">?</span></button>
+      </div>
+      <div class="knob-group">
+        <label><span data-i18n="knob.porta">滑音</span> <span class="help-icon" data-i18n-tip="tip.porta" data-tip="相邻音符之间的滑音过渡时间，模拟 Talkbox 管子的自然滑音">?</span> <input type="number" id="val-porta" value="0.05" min="0" max="0.5" step="0.01" class="val-input">s</label>
+        <input type="range" id="porta-knob" min="0" max="0.5" value="0.05" step="0.01">
+      </div>
+      <div class="knob-group">
+        <label><span data-i18n="knob.attack">Attack</span> <span class="help-icon" data-i18n-tip="tip.attack" data-tip="音量包络起音时间，控制音符从无声到最大音量的速度">?</span> <input type="number" id="val-attack" value="0.01" min="0" max="1" step="0.01" class="val-input">s</label>
+        <input type="range" id="attack-knob" min="0" max="1" value="0.01" step="0.01">
+      </div>
+      <div class="knob-group">
+        <label><span data-i18n="knob.release">Release</span> <span class="help-icon" data-i18n-tip="tip.release" data-tip="音量包络释音时间，控制音符结束后音量衰减的速度">?</span> <input type="number" id="val-release" value="0.2" min="0" max="1" step="0.01" class="val-input">s</label>
+        <input type="range" id="release-knob" min="0" max="1" value="0.2" step="0.01">
+      </div>
+      <div class="knob-group">
+        <label><span data-i18n="knob.volume">音量</span> <span class="help-icon" data-i18n-tip="tip.volume" data-tip="合成器最终输出音量">?</span> <input type="number" id="val-volume" value="-6" min="-30" max="6" step="1" class="val-input">dB</label>
+        <input type="range" id="volume-knob" min="-30" max="6" value="-6" step="1">
+      </div>
+      <div class="knob-group">
+        <label><span data-i18n="knob.intensity">默认乐句强度</span> <span class="help-icon" data-i18n-tip="tip.intensity" data-tip="控制共振峰滤波的响应深度，值越高元音特征越明显">?</span> <input type="number" id="val-intensity" value="75" min="10" max="100" step="1" class="val-input">%</label>
+        <input type="range" id="intensity-knob" min="10" max="100" value="75" step="1">
+      </div>
+    </div>
+
+    <!-- 音色预设区 -->
+    <div class="panel-section" id="preset-section">
+      <div class="section-header"><span data-i18n="section.preset">音色预设</span></div>
+      <div class="preset-grid">
+        <button class="preset-btn" data-preset="classic" data-i18n="preset.classic">Classic</button>
+        <button class="preset-btn" data-preset="bright" data-i18n="preset.bright">Bright</button>
+        <button class="preset-btn" data-preset="deep" data-i18n="preset.deep">Deep</button>
+        <button class="preset-btn" data-preset="nasal" data-i18n="preset.nasal">Nasal</button>
+        <button class="preset-btn" data-preset="robot" data-i18n="preset.robot">Robot</button>
+        <button class="preset-btn" data-preset="warm" data-i18n="preset.warm">Warm</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 钢琴窗 -->
+  <div id="piano-roll-container">
+    <div class="pr-toolbar">
+      <button id="btn-tool-select" class="pr-tool active" data-i18n-title="pr.select">⇱</button>
+      <button id="btn-tool-draw" class="pr-tool" data-i18n-title="pr.draw">✎</button>
+      <button id="btn-tool-eraser" class="pr-tool" data-i18n-title="pr.eraser">⌫</button>
+      <span class="sep"></span>
+      <button id="btn-snap-grid" class="pr-tool" data-i18n-title="pr.snap">#</button>
+      <select id="snap-select" class="pr-select">
+        <option value="4n">1/4</option>
+        <option value="8n" selected>1/8</option>
+        <option value="16n">1/16</option>
+        <option value="32n">1/32</option>
+      </select>
+      <span class="sep"></span>
+      <button id="btn-quantize" class="pr-tool" data-i18n-title="pr.quantize">Q</button>
+      <button id="btn-delete-selected" class="pr-tool" data-i18n-title="pr.delete">✕</button>
+      <span class="sep"></span>
+      <button id="btn-zoom-in" class="pr-tool" data-i18n-title="pr.zoom-in">＋</button>
+      <button id="btn-zoom-out" class="pr-tool" data-i18n-title="pr.zoom-out">－</button>
+      <span id="zoom-label">1x</span>
+    </div>
+    <div id="piano-roll-wrap">
+      <canvas id="piano-roll"></canvas>
+    </div>
+    <!-- 时间标尺 -->
+    <canvas id="time-ruler"></canvas>
+    <!-- 音符属性浮动面板 -->
+    <div id="note-props" class="note-props hidden">
+      <div class="note-props-header">
+        <span id="note-props-name">C4</span>
+        <button id="note-props-close" class="note-props-close">&times;</button>
+      </div>
+      <div class="note-props-body">
+        <div class="note-props-row">
+          <label data-i18n="np.intensity">强度</label>
+          <input type="range" id="note-props-intensity" min="10" max="100" value="75" step="1">
+          <input type="number" id="note-props-intensity-val" value="75" min="10" max="100" step="any" class="prop-num">
+          <span>%</span>
+        </div>
+        <div class="note-props-row">
+          <label data-i18n="np.volume">音量</label>
+          <input type="range" id="note-props-volume" min="-30" max="6" value="0" step="0.5">
+          <input type="number" id="note-props-volume-val" value="0" min="-30" max="6" step="0.5" class="prop-num">
+          <span>dB</span>
+        </div>
+        <div class="note-props-row">
+          <label data-i18n="np.wave">载波</label>
+          <select id="note-props-wave">
+            <option value="" data-i18n="np.wave-global">全局</option>
+            <option value="sawtooth">Saw</option>
+            <option value="square">Square</option>
+            <option value="triangle">Tri</option>
+          </select>
+        </div>
+        <div class="note-props-row">
+          <label data-i18n="np.porta">滑音</label>
+          <input type="range" id="note-props-porta" min="0" max="100" value="0" step="1">
+          <input type="number" id="note-props-porta-val" value="0" min="0" max="1" step="0.01" class="prop-num">
+          <span>s</span>
+        </div>
+        <div class="note-props-row">
+          <label data-i18n="np.attack">Attack</label>
+          <input type="range" id="note-props-attack" min="0" max="200" value="0" step="1">
+          <input type="number" id="note-props-attack-val" value="0" min="0" max="2" step="0.001" class="prop-num">
+          <span>s</span>
+        </div>
+        <div class="note-props-row">
+          <label data-i18n="np.release">Release</label>
+          <input type="range" id="note-props-release" min="0" max="200" value="0" step="1">
+          <input type="number" id="note-props-release-val" value="0" min="0" max="2" step="0.01" class="prop-num">
+          <span>s</span>
+        </div>
+        <div class="note-props-row">
+          <label data-i18n="np.vowel">元音</label>
+          <select id="note-props-vowel">
+            <option value="" data-i18n="np.vowel-global">全局</option>
+            <option value="a">a</option>
+            <option value="e">e</option>
+            <option value="i">i</option>
+            <option value="o">o</option>
+            <option value="u">u</option>
+            <option value="ae">ae</option>
+            <option value="oo">oo</option>
+            <option value="er">er</option>
+            <option value="bypass">OFF</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 状态栏 -->
+<footer id="status-bar">
+  <span id="status-text">就绪</span>
+  <span id="status-time">00:00.000</span>
+  <button id="btn-shortcuts" class="status-btn" title="快捷键">
+    <svg width="14" height="14" viewBox="0 0 48 48" fill="none"><rect x="4" y="10" width="40" height="28" rx="4" stroke="currentColor" stroke-width="3"/><rect x="10" y="16" width="28" height="16" rx="2" fill="currentColor" opacity="0.3"/></svg>
+  </button>
+</footer>
+
+<!-- 快捷键面板 -->
+<div id="shortcuts-panel" class="shortcuts-panel">
+  <div class="shortcuts-section">
+    <div class="shortcuts-section-title" data-i18n="sc.playback">播放控制</div>
+    <div class="shortcut-row"><kbd>Space</kbd><span data-i18n="sc.play">播放 / 暂停</span></div>
+    <div class="shortcut-row"><kbd>R</kbd><span data-i18n="sc.record">录制</span></div>
+    <div class="shortcut-row"><kbd>M</kbd><span data-i18n="sc.metronome">节拍器</span></div>
+  </div>
+  <div class="shortcuts-section">
+    <div class="shortcuts-section-title" data-i18n="sc.tools">工具切换</div>
+    <div class="shortcut-row"><kbd>D</kbd><span data-i18n="sc.draw">画笔工具</span></div>
+    <div class="shortcut-row"><kbd>S</kbd><span data-i18n="sc.select">选择工具</span></div>
+    <div class="shortcut-row"><kbd>E</kbd><span data-i18n="sc.eraser">橡皮擦</span></div>
+  </div>
+  <div class="shortcuts-section">
+    <div class="shortcuts-section-title" data-i18n="sc.edit">编辑</div>
+    <div class="shortcut-row"><kbd>Q</kbd><span data-i18n="sc.quantize">量化音符</span></div>
+    <div class="shortcut-row"><kbd>Del</kbd><span data-i18n="sc.delete">删除选中</span></div>
+    <div class="shortcut-row"><kbd>Ctrl</kbd><span class="shortcut-plus">+</span><kbd>Z</kbd><span data-i18n="sc.undo">撤销</span></div>
+    <div class="shortcut-row"><kbd>Ctrl</kbd><span class="shortcut-plus">+</span><kbd>Y</kbd><span data-i18n="sc.redo">重做</span></div>
+    <div class="shortcut-row"><kbd>Ctrl</kbd><span class="shortcut-plus">+</span><kbd>A</kbd><span data-i18n="sc.select-all">全选</span></div>
+    <div class="shortcut-row"><kbd>Esc</kbd><span data-i18n="sc.deselect">取消选择</span></div>
+  </div>
+  <div class="shortcuts-section">
+    <div class="shortcuts-section-title" data-i18n="sc.project">项目</div>
+    <div class="shortcut-row"><kbd>Ctrl</kbd><span class="shortcut-plus">+</span><kbd>S</kbd><span data-i18n="sc.save">保存项目</span></div>
+    <div class="shortcut-row"><kbd>Ctrl</kbd><span class="shortcut-plus">+</span><kbd>N</kbd><span data-i18n="sc.new">新建项目</span></div>
+  </div>
+  <div class="shortcuts-section">
+    <div class="shortcuts-section-title" data-i18n="sc.help">帮助</div>
+    <div class="shortcut-row"><kbd>Ctrl</kbd><span class="shortcut-plus">+</span><kbd>Alt</kbd><span class="shortcut-plus">+</span><kbd>T</kbd><span data-i18n="sc.tutorial">教程引导</span></div>
+  </div>
+</div>
+
+<!-- MIDI 导入浮层 -->
+<div id="midi-dialog" class="dialog-overlay hidden">
+  <div class="dialog-panel">
+    <button class="dialog-close" data-i18n-title="midi.close">&times;</button>
+    <div class="dialog-body">
+      <!-- 左：AI 提示词 -->
+      <div class="dialog-left">
+        <div class="dialog-section-title" data-i18n="midi.title-ai">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+          AI 生成 Talkbox MIDI 提示词
+        </div>
+        <p class="dialog-desc" data-i18n="midi.desc-ai">将此提示词复制到 ChatGPT / Claude 等 AI 工具中，上传你的 MP3 人声文件，即可自动生成 Talkbox 风格 MIDI 文件。</p>
+        <div class="prompt-box" id="prompt-text">你是一个音乐制作专家，擅长将人声旋律转化为 MIDI 音符。
+
+请分析我上传的 MP3 人声音频文件，完成以下任务：
+
+1. **音高检测**：逐音符提取人声旋律的音高（MIDI Note Number），忽略换气、齿音等非音高片段。
+
+2. **节奏量化**：将每个音符的起始时间和持续时长量化为 4/4 拍网格，以 "小节:拍:十六分音符" 格式输出（例如 "0:0:0" 表示第 1 小节第 1 拍正拍）。
+
+3. **Talkbox 适配**：
+   - 音符范围控制在 MIDI 48–84（C3–C6），超出范围的音符上移或下移八度。
+   - 滑音连接：相邻音符间距 ≤ 2 个半音时合并为滑音记号。
+   - 每个音符持续时长不超过 2 拍，超过则拆分为连续音符。
+
+4. **输出格式**：生成标准 MIDI 文件（.mid），包含单个轨道，速度 120 BPM，4/4 拍。
+
+请直接提供可下载的 .mid 文件。</div>
+        <button class="btn-copy" id="btn-copy-prompt" data-i18n="midi.copy">复制提示词</button>
+      </div>
+      <!-- 右：MIDI 导入 -->
+      <div class="dialog-right">
+        <div class="dialog-section-title" data-i18n="midi.title-import">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+          导入 MIDI 文件
+        </div>
+        <div class="drop-zone" id="midi-drop-zone">
+          <div class="drop-icon">
+            <svg width="40" height="40" viewBox="0 0 20 20" fill="none"><path d="M10 2v12M6 10l4 4 4-4M2 17h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <p class="drop-text" data-i18n="midi.drop-text">拖拽 .mid 文件到此处</p>
+          <p class="drop-sub"><span data-i18n="midi.drop-sub">或</span> <span class="drop-link" data-i18n="midi.drop-link">点击选择文件</span></p>
+          <input type="file" id="midi-file-input" accept=".mid,.midi" hidden>
+        </div>
+        <p class="dialog-desc" style="margin-top:12px;" data-i18n="midi.desc-import">导入后 MIDI 音符将自动填充到当前轨道的钢琴窗中。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主题选择浮层 -->
+<div id="theme-popover" class="theme-popover hidden">
+  <div class="theme-header"><span class="theme-dot-indicator" id="theme-dot-indicator"></span><span id="theme-header-text" data-i18n="theme.header">主题色</span></div>
+  <div class="theme-swatches" id="theme-swatches">
+    <button class="theme-swatch active" data-color="#e8a840" style="background:#e8a840" title="琥珀"></button>
+    <button class="theme-swatch" data-color="#4fc3f7" style="background:#4fc3f7" title="天蓝"></button>
+    <button class="theme-swatch" data-color="#81c784" style="background:#81c784" title="翠绿"></button>
+    <button class="theme-swatch" data-color="#ce93d8" style="background:#ce93d8" title="淡紫"></button>
+    <button class="theme-swatch" data-color="#ef5350" style="background:#ef5350" title="赤红"></button>
+    <button class="theme-swatch" data-color="#ff8a65" style="background:#ff8a65" title="橘橙"></button>
+    <button class="theme-swatch" data-color="#90a4ae" style="background:#90a4ae" title="蓝灰"></button>
+    <button class="theme-swatch" data-color="#ffd54f" style="background:#ffd54f" title="亮黄"></button>
+  </div>
+  <div class="theme-custom">
+    <label class="theme-label" data-i18n="theme.custom">自定义</label>
+    <input type="color" id="theme-custom-picker" value="#e8a840">
+  </div>
+</div>
+
+<script src="js/Tone.min.js"></script>
+<script src="js/audio-engine.js"></script>
+<script src="js/piano-roll.js"></script>
+<script src="js/midi-import.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
